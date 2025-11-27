@@ -25,7 +25,6 @@ def get_connection():
     """
     try:
         # Check if secrets exist without crashing
-        # We access st.secrets inside a try block to handle the "No secrets found" error
         if "mysql" in st.secrets:
             return mysql.connector.connect(
                 host=st.secrets["mysql"]["host"],
@@ -35,7 +34,6 @@ def get_connection():
                 database=st.secrets["mysql"]["database"]
             )
     except Exception:
-        # If secrets.toml is missing or malformed, ignore and use .env
         pass
         
     # Fallback to local .env configuration defined in 'cfg'
@@ -370,10 +368,6 @@ def main():
 
     # --- 3. INVENTORY STATUS ---
     elif choice == "Inventory Status":
-        
-
-
-
         st.markdown("### Low Stock Alert")
         df = get_low_stock_report()
         
@@ -417,9 +411,6 @@ def main():
 
     # --- 4. STAFF ANALYTICS ---
     elif choice == "Staff Analytics":
-        
-
-
         st.markdown("### Workload Distribution")
         
         df = get_staff_workload_share()
@@ -461,6 +452,17 @@ def main():
                 st.dataframe(df, use_container_width=True)
         else:
             st.info("No workload data available.")
+
+    # --- FOOTER ---
+    st.markdown("---")
+    st.markdown(
+        """
+        <div style="text-align: center; color: #94A3B8; font-size: 0.875rem;">
+            Made by Ilyas Rahmouni, Younes Lougnidi, Malak Koulat, Aymane Raiss, Youness Latif, Rayane Khaldi, Zakaria Harira
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 if __name__ == "__main__":
     main()
