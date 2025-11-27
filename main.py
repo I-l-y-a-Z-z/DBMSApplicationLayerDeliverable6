@@ -5,6 +5,7 @@ import os
 import plotly.express as px
 import plotly.graph_objects as go
 from dotenv import load_dotenv
+from datetime import datetime
 
 # 1. SETUP & CONFIGURATION
 load_dotenv()
@@ -106,6 +107,18 @@ def get_next_caid():
                 return 1000 
     except: return 1000
 
+def get_next_iid():
+    sql = "SELECT MAX(IID) as max_id FROM Patient"
+    try:
+        with get_connection() as cnx:
+            with cnx.cursor(dictionary=True) as cur:
+                cur.execute(sql)
+                res = cur.fetchone()
+                if res and res['max_id']:
+                    return res['max_id'] + 1
+                return 1000 
+    except: return 1000
+
 # --------------------------
 
 def schedule_appointment(caid, iid, staff_id, dep_id, date_str, time_str, reason):
@@ -127,6 +140,33 @@ def schedule_appointment(caid, iid, staff_id, dep_id, date_str, time_str, reason
         except Exception as e:
             cnx.rollback()
             raise e
+
+def add_new_patient(iid, cin, full_name, birth, sex, blood_group, phone, email):
+    sql = """
+    INSERT INTO Patient (IID, CIN, FullName, Birth, Sex, BloodGroup, Phone, Email)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+    """
+    with get_connection() as cnx:
+        try:
+            with cnx.cursor() as cur:
+                cur.execute(sql, (iid, cin, full_name, birth, sex, blood_group, phone, email))
+                cnx.commit()
+                return True
+        except Exception as e:
+            cnx.rollback()
+            raise e
+
+def check_cin_exists(cin):
+    """Check if CIN already exists in database"""
+    sql = "SELECT COUNT(*) as count FROM Patient WHERE CIN = %s"
+    try:
+        with get_connection() as cnx:
+            with cnx.cursor(dictionary=True) as cur:
+                cur.execute(sql, (cin,))
+                result = cur.fetchone()
+                return result['count'] > 0
+    except:
+        return False
 
 def get_low_stock_report():
     sql = """
@@ -275,6 +315,7 @@ def main():
     st.sidebar.markdown("### Navigation")
     menu_options = [
         "Patient Directory",
+        "Add New Patient",
         "Schedule Appointment",
         "Inventory Status",
         "Staff Analytics"
@@ -299,7 +340,79 @@ def main():
                 else:
                     st.info("No records found.")
 
-    # --- 2. SCHEDULE APPOINTMENT ---
+    # --- 2. ADD NEW PATIENT ---
+    elif choice == "Add New Patient":
+        st.markdown("### Register New Patient")
+        st.markdown("<p class='sub-text' style='font-size:0.9rem'>Enter the patient details below to create a new record.</p>", unsafe_allow_html=True)
+        
+        next_iid = get_next_iid()
+        
+        with st.form("patient_form"):
+            st.markdown("#### Personal Information")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.text_input("Patient ID (Auto)", value=next_iid, disabled=True, key="patient_id")
+                cin = st.text_input("CIN *", placeholder="Enter CIN number", max_chars=20)
+                full_name = st.text_input("Full Name *", placeholder="Enter full name")
+                birth_date = st.date_input(
+                    "Date of Birth *", 
+                    max_value=datetime(2015, 12, 31).date(),
+                    min_value=datetime(1965, 1, 1).date()
+                )
+            
+            with col2:
+                sex = st.selectbox("Sex *", ["", "M", "F"], format_func=lambda x: "Male" if x == "M" else "Female" if x == "F" else "")
+                blood_group = st.selectbox("Blood Group", ["", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], index=0)
+                phone = st.text_input("Phone", placeholder="Enter phone number")
+                email = st.text_input("Email", placeholder="Enter email address")
+            
+            st.markdown("---")
+            st.markdown("<p class='sub-text'>* Required fields</p>", unsafe_allow_html=True)
+            
+            submitted = st.form_submit_button("Register Patient", type="primary", use_container_width=True)
+            
+            if submitted:
+                # Validation
+                if not cin:
+                    st.error("CIN is required.")
+                elif not full_name:
+                    st.error("Full Name is required.")
+                elif not birth_date:
+                    st.error("Date of Birth is required.")
+                elif not sex:
+                    st.error("Sex is required.")
+                else:
+                    # Check if CIN already exists
+                    if check_cin_exists(cin):
+                        st.error(f"Patient with CIN {cin} already exists.")
+                    else:
+                        try:
+                            # Convert empty strings to None for database
+                            blood_group = blood_group if blood_group else None
+                            phone = phone if phone else None
+                            email = email if email else None
+                            
+                            add_new_patient(
+                                iid=next_iid,
+                                cin=cin,
+                                full_name=full_name,
+                                birth=birth_date,
+                                sex=sex,
+                                blood_group=blood_group,
+                                phone=phone,
+                                email=email
+                            )
+                            st.success(f"Patient {full_name} registered successfully! Patient ID: {next_iid}")
+                            
+                            # Clear form (Streamlit will reload)
+                            st.rerun()
+                            
+                        except Exception as e:
+                            st.error(f"Failed to register patient: {e}")
+
+    # --- 3. SCHEDULE APPOINTMENT ---
     elif choice == "Schedule Appointment":
         st.markdown("### New Appointment")
         st.markdown("<p class='sub-text' style='font-size:0.9rem'>Select the details below to schedule a visit.</p>", unsafe_allow_html=True)
@@ -365,7 +478,7 @@ def main():
                     except Exception as e:
                         st.error(f"Failed to schedule: {e}")
 
-    # --- 3. INVENTORY STATUS ---
+    # --- 4. INVENTORY STATUS ---
     elif choice == "Inventory Status":
         st.markdown("### Low Stock Alert")
         df = get_low_stock_report()
@@ -408,7 +521,7 @@ def main():
         else:
             st.success("All inventory levels are optimal.")
 
-    # --- 4. STAFF ANALYTICS ---
+    # --- 5. STAFF ANALYTICS ---
     elif choice == "Staff Analytics":
         st.markdown("### Workload Distribution")
         

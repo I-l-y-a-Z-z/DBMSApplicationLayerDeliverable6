@@ -1,5 +1,6 @@
 # Ignore your specific venv folder
 mnhsapp/
+MNHS/
 
 # Ignore standard venv names (just in case)
 venv/
