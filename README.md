@@ -9,6 +9,8 @@ A comprehensive **Hospital Management System Dashboard** built with Python and S
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Plotly](https://img.shields.io/badge/Plotly-239120?style=for-the-badge&logo=plotly&logoColor=white)
 
+**🚀 Live Demo:** [mnhslab6.streamlit.app](https://mnhslab6.streamlit.app)
+
 ## Key Features
 
 1.  **Patient Directory**:
