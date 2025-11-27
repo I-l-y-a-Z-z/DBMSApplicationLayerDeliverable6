@@ -16,15 +16,20 @@ A comprehensive **Hospital Management System Dashboard** built with Python and S
 1.  **Patient Directory**:
     * View and sort registered patients from the database.
     * Optimized SQL queries for efficient data retrieval.
-2.  **Smart Appointment Scheduling**:
+2.  **Add Patient**:
+    * **Streamlined Registration**: A dedicated "Personal Information" interface to onboard new patients efficiently.
+    * **Automated ID**: The system automatically generates a unique `Patient ID` (read-only) to ensure database integrity.
+    * **Demographic Data**: Captures essential mandatory fields including **CIN**, Full Name, Date of Birth, and Sex.
+    * **Extended Profile**: Allows for optional entry of contact details (Phone, Email) and medical context (Blood Group).
+3.  **Smart Appointment Scheduling**:
     * **Cascading Dropdowns:** Select Hospital -> Filter Departments -> Filter Staff.
     * **Transaction Management:** Ensures data integrity when creating Clinical Activities and Appointments simultaneously.
     * Auto-generated Clinical Activity IDs.
-3.  **Inventory Status**:
+4.  **Inventory Status**:
     * Real-time **Low Stock Alerts** based on reorder levels.
     * Visual breakdown of critical vs. adequate stock levels.
     * Data joined across Medication, Stock, and Hospital tables.
-4.  **Staff Analytics**:
+5.  **Staff Analytics**:
     * Complex nested queries to calculate workload distribution.
     * **Grouped Bar Charts** to show staff performance across multiple hospital facilities using Plotly.
 
