@@ -196,7 +196,6 @@ def main():
     st.set_page_config(
         page_title="MNHS Manager",
         layout="wide",
-        page_icon="🏥",
         initial_sidebar_state="expanded"
     )
 
