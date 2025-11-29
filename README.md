@@ -82,7 +82,7 @@ Create a file named .env in the root directory and add your database credentials
 ```bash
 MYSQL_HOST=localhost
 MYSQL_PORT=3306
-MYSQL_DB=mnhs_db
+MYSQL_DB=MNHS
 MYSQL_USER=your_user
 MYSQL_PASSWORD=your_password
 ```
