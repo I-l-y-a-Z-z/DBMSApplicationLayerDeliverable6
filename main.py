@@ -13,7 +13,7 @@ load_dotenv()
 # Local .env configuration
 cfg = dict(
     host=os.getenv("MYSQL_HOST"),
-    port=int(os.getenv("MYSQL_PORT", 3306)),
+    port=int(os.getenv("MYSQL_PORT")),
     database=os.getenv("MYSQL_DB"),
     user=os.getenv("MYSQL_USER"),
     password=os.getenv("MYSQL_PASSWORD"),
