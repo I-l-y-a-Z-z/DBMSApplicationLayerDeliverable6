@@ -83,12 +83,25 @@ Create a file named .env in the root directory and add your database credentials
 MYSQL_HOST=localhost
 MYSQL_PORT=3306
 MYSQL_DB=mnhs_db
-MYSQL_USER=root
+MYSQL_USER=your_user
 MYSQL_PASSWORD=your_password
 ```
 
 ### 5. Database Setup
-Import the provided backup.sql file into your MySQL database to create the necessary schema and seed data.
+
+The repository includes a monolithic SQL script named `query.sql`. This file contains the **Data Definition Language (DDL)** to build the schema and the **Data Manipulation Language (DML)** to populate it with a comprehensive, hyper-realistic dataset.
+
+Follow these steps to initialize the database using **MySQL Workbench**:
+
+1.  **Launch MySQL Workbench** and connect to your local MySQL instance (usually `root` on `localhost:3306`).
+2.  In the top menu, go to **File** > **Open SQL Script...** (or press `Ctrl+Shift+O`).
+3.  Navigate to the project folder and select the `query.sql` file.
+4.  Once the script loads in the editor, click the **Execute** button (the **lightning bolt icon** ⚡) located in the toolbar above the script code to run the entire file.
+5.  **Wait for execution:** The script will drop any existing version of the `MNHS` database, recreate the tables, and insert all sample data. Check the "Output" panel at the bottom to ensure all commands finished successfully.
+6.  In the **Navigator** panel on the left (under the "Schemas" tab), click the **Refresh** button (small circular arrows).
+7.  Verify that the `MNHS` database now appears in the list.
+
+> **Important:** The `query.sql` script creates the schema and data, but it does **not** create the database user automatically. You must manually create a database user (or use an existing one) and ensure that the username and password match exactly what you added to your `.env` file (as explained in the Configuration section above).
 
 ### 6. Run the App
 
