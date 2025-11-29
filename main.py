@@ -24,20 +24,6 @@ def get_connection():
     Establishes a connection to the database.
     Prioritizes Streamlit Secrets (Cloud), falls back to .env (Local).
     """
-    try:
-        # Check if secrets exist without crashing
-        if "mysql" in st.secrets:
-            return mysql.connector.connect(
-                host=st.secrets["mysql"]["host"],
-                port=st.secrets["mysql"]["port"],
-                user=st.secrets["mysql"]["user"],
-                password=st.secrets["mysql"]["password"],
-                database=st.secrets["mysql"]["database"]
-            )
-    except Exception:
-        pass
-        
-    # Fallback to local .env configuration defined in 'cfg'
     return mysql.connector.connect(**cfg)
 
 # 2. DATABASE FUNCTIONS
@@ -122,23 +108,50 @@ def get_next_iid():
 # --------------------------
 
 def schedule_appointment(caid, iid, staff_id, dep_id, date_str, time_str, reason):
-    sql_activity = """
+    """
+    Schedules an appointment with 'Double Booking' protection.
+    """
+    # 1. Validation SQL: Check if staff is already booked
+    check_sql = """
+    SELECT CAID 
+    FROM ClinicalActivity 
+    WHERE STAFF_ID = %s AND Date = %s AND Time = %s
+    LIMIT 1
+    """
+
+    # 2. Insert SQLs
+    ins_ca = """
     INSERT INTO ClinicalActivity (CAID, IID, STAFF_ID, DEP_ID, Date, Time)
     VALUES (%s, %s, %s, %s, %s, %s)
     """
-    sql_appt = """
+    ins_appt = """
     INSERT INTO Appointment (CAID, Reason, Status)
     VALUES (%s, %s, 'Scheduled')
     """
+
     with get_connection() as cnx:
         try:
             with cnx.cursor() as cur:
-                cur.execute(sql_activity, (caid, iid, staff_id, dep_id, date_str, time_str))
-                cur.execute(sql_appt, (caid, reason))
+                # --- [TRIGGER LOGIC START] ---
+                # Check for double booking before doing anything
+                cur.execute(check_sql, (staff_id, date_str, time_str))
+                conflict = cur.fetchone()
+                
+                if conflict:
+                    # STOP! Raise an error to prevent the insert
+                    raise ValueError(f"Double Booking Error: Staff {staff_id} is already busy at {time_str} on {date_str}.")
+                # --- [TRIGGER LOGIC END] ---
+
+                # If no conflict, proceed with the transaction
+                cur.execute(ins_ca, (caid, iid, staff_id, dep_id, date_str, time_str))
+                cur.execute(ins_appt, (caid, reason))
+                
                 cnx.commit()
                 return True
+                
         except Exception as e:
             cnx.rollback()
+            # Re-raise the error so Streamlit can display it in a red box
             raise e
 
 def add_new_patient(iid, cin, full_name, birth, sex, blood_group, phone, email):
@@ -168,7 +181,7 @@ def check_cin_exists(cin):
     except:
         return False
 
-def get_low_stock_report():
+def low_stock():
     sql = """
     SELECT 
     M.Name AS MedicationName,
@@ -481,7 +494,7 @@ def main():
     # --- 4. INVENTORY STATUS ---
     elif choice == "Inventory Status":
         st.markdown("### Low Stock Alert")
-        df = get_low_stock_report()
+        df = low_stock()
         
         if df is not None and not df.empty:
             m1, m2, m3 = st.columns(3)
@@ -539,7 +552,7 @@ def main():
                 orientation='h',
                 barmode='group',      
                 text="PercentageShare",
-                color_discrete_sequence=['#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
+                color_discrete_sequence=['#3b82f6', '#10b981', '#f59e0b', '#ef4444', "#b3ff00"],
                 labels={"PercentageShare": "Share (%)", "StaffName": "Staff Member", "HospitalName": "Facility"}
             )
             
