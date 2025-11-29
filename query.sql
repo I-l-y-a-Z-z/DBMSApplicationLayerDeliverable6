@@ -1,6 +1,8 @@
 CREATE DATABASE MNHS;
 USE MNHS;
 
+SET FOREIGN_KEY_CHECKS = 0;
+
 -- MySQL dump 10.13  Distrib 8.0.43, for Linux (x86_64)
 --
 -- Host: localhost    Database: MNHS
@@ -587,3 +589,5 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2025-11-27  8:49:12
+
+SET FOREIGN_KEY_CHECKS = 1;
