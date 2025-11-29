@@ -10,21 +10,41 @@ from datetime import datetime
 # 1. SETUP & CONFIGURATION
 load_dotenv()
 
-# Local .env configuration
-cfg = dict(
-    host=os.getenv("MYSQL_HOST"),
-    port=int(os.getenv("MYSQL_PORT", 3306)),
-    database=os.getenv("MYSQL_DB"),
-    user=os.getenv("MYSQL_USER"),
-    password=os.getenv("MYSQL_PASSWORD"),
-)
+import streamlit as st
+import mysql.connector
+import os
+from dotenv import load_dotenv
 
 def get_connection():
     """
-    Establishes a connection to the database.
-    Prioritizes Streamlit Secrets (Cloud), falls back to .env (Local).
+    Establishes a database connection with a hybrid approach:
+    1. Tries to load from Streamlit Secrets (st.secrets) for Cloud deployment.
+    2. Falls back to local .env file using python-dotenv for local dev.
     """
-    return mysql.connector.connect(**cfg)
+    try:
+        # Attempt to access Streamlit Secrets
+        # This will work if .streamlit/secrets.toml exists or on Streamlit Cloud
+        return mysql.connector.connect(
+            host=st.secrets["mysql"]["host"],
+            port=st.secrets["mysql"]["port"],
+            database=st.secrets["mysql"]["database"],
+            user=st.secrets["mysql"]["user"],
+            password=st.secrets["mysql"]["password"]
+        )
+    except (FileNotFoundError, KeyError):
+        # Fallback: Load environment variables from .env file
+        load_dotenv()
+        
+        # Ensure port is an integer
+        port_val = os.getenv("MYSQL_PORT", 3306)
+        
+        return mysql.connector.connect(
+            host=os.getenv("MYSQL_HOST"),
+            port=int(port_val),
+            database=os.getenv("MYSQL_DB"),
+            user=os.getenv("MYSQL_USER"),
+            password=os.getenv("MYSQL_PASSWORD")
+        )
 
 # 2. DATABASE FUNCTIONS
 
