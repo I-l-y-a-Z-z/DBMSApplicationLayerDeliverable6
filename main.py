@@ -518,10 +518,10 @@ def main():
         
         if df is not None and not df.empty:
             m1, m2, m3 = st.columns(3)
-            no_stock = len(df[df['StockStatus'] == 'No Stock'])
-            low_stock = len(df[df['StockStatus'] == 'Low Stock'])
-            m1.metric("Critical", no_stock)
-            m2.metric("Warning", low_stock)
+            no_s = len(df[df['StockStatus'] == 'No Stock'])
+            low_s = len(df[df['StockStatus'] == 'Low Stock'])
+            m1.metric("Critical", no_s)
+            m2.metric("Warning", low_s)
             m3.metric("Total Flagged", len(df))
             
             st.divider()
