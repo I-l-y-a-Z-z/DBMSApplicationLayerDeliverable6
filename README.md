@@ -48,8 +48,8 @@ Follow these steps to run the application on your local machine.
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/mnhs-manager.git
-cd mnhs-manager
+git clone https://github.com/I-l-y-a-Z-z/DBMSApplicationLayerDeliverable5.git
+cd DBMSApplicationLayerDeliverable5
 ```
 
 
