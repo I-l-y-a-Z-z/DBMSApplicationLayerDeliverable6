@@ -122,7 +122,7 @@ To deploy this app live:
 [mysql]
 host = "gateway01.us-west-2.prod.aws.tidbcloud.com"
 port = 4000
-database = "mnhs_db"
+database = "MNHS"
 user = "your_tidb_user"
 password = "your_tidb_password"
 ```
